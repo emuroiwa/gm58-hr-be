@@ -11,22 +11,17 @@ type User struct {
 	Username  string         `json:"username" gorm:"unique;not null"`
 	Email     string         `json:"email" gorm:"unique;not null"`
 	Password  string         `json:"-" gorm:"not null"`
-	Role      string         `json:"role" gorm:"not null;default:'employee'"` // super_admin, company_admin, hr, employee
+	Role      string         `json:"role" gorm:"not null;default:'employee'"` // admin, hr, employee
 	IsActive  bool           `json:"is_active" gorm:"default:true"`
 	LastLogin *time.Time     `json:"last_login"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
-
-	// Multi-company relationships
-	CompanyUsers []CompanyUser `json:"company_users,omitempty" gorm:"foreignKey:UserID"`
 }
 
 type Department struct {
 	ID          uint           `json:"id" gorm:"primaryKey"`
-	CompanyID   uint           `json:"company_id"`
-	Company     Company        `json:"company,omitempty" gorm:"foreignKey:CompanyID"`
-	Name        string         `json:"name" gorm:"not null"`
+	Name        string         `json:"name" gorm:"unique;not null"`
 	Description string         `json:"description"`
 	ManagerID   *uint          `json:"manager_id"`
 	Manager     *Employee      `json:"manager,omitempty" gorm:"foreignKey:ManagerID"`
@@ -38,8 +33,6 @@ type Department struct {
 
 type Position struct {
 	ID           uint           `json:"id" gorm:"primaryKey"`
-	CompanyID    uint           `json:"company_id"`
-	Company      Company        `json:"company,omitempty" gorm:"foreignKey:CompanyID"`
 	Title        string         `json:"title" gorm:"not null"`
 	DepartmentID uint           `json:"department_id"`
 	Department   Department     `json:"department" gorm:"foreignKey:DepartmentID"`
@@ -55,24 +48,22 @@ type Position struct {
 }
 
 type Employee struct {
-	ID               uint    `json:"id" gorm:"primaryKey"`
-	CompanyID        uint    `json:"company_id"`
-	Company          Company `json:"company,omitempty" gorm:"foreignKey:CompanyID"`
-	UserID           *uint   `json:"user_id"`
-	User             *User   `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	EmployeeNumber   string  `json:"employee_number" gorm:"not null"`
-	FirstName        string  `json:"first_name" gorm:"not null"`
-	LastName         string  `json:"last_name" gorm:"not null"`
-	MiddleName       string  `json:"middle_name"`
-	NationalID       string  `json:"national_id"`
-	TaxNumber        string  `json:"tax_number"`
-	PassportNumber   string  `json:"passport_number"`
-	Email            string  `json:"email"`
-	Phone            string  `json:"phone"`
-	AlternativePhone string  `json:"alternative_phone"`
-	Address          string  `json:"address"`
-	City             string  `json:"city"`
-	Country          string  `json:"country" gorm:"default:'Local'"`
+	ID               uint   `json:"id" gorm:"primaryKey"`
+	UserID           *uint  `json:"user_id"`
+	User             *User  `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	EmployeeNumber   string `json:"employee_number" gorm:"unique;not null"`
+	FirstName        string `json:"first_name" gorm:"not null"`
+	LastName         string `json:"last_name" gorm:"not null"`
+	MiddleName       string `json:"middle_name"`
+	NationalID       string `json:"national_id" gorm:"unique"`
+	TaxNumber        string `json:"tax_number"`
+	PassportNumber   string `json:"passport_number"`
+	Email            string `json:"email" gorm:"unique"`
+	Phone            string `json:"phone"`
+	AlternativePhone string `json:"alternative_phone"`
+	Address          string `json:"address"`
+	City             string `json:"city"`
+	Country          string `json:"country" gorm:"default:'Local'"`
 
 	// Employment Details
 	PositionID   uint       `json:"position_id"`
@@ -130,17 +121,4 @@ func (e *Employee) FullName() string {
 		return e.FirstName + " " + e.MiddleName + " " + e.LastName
 	}
 	return e.FirstName + " " + e.LastName
-}
-
-// Add unique indexes for multi-tenancy
-func (Department) TableName() string {
-	return "departments"
-}
-
-func (Position) TableName() string {
-	return "positions"
-}
-
-func (Employee) TableName() string {
-	return "employees"
 }
