@@ -3,7 +3,6 @@ package routes
 import (
 	"gm58-hr-backend/internal/api/handlers"
 	"gm58-hr-backend/internal/api/middleware"
-	// "gm58-hr-backend/internal/middleware"
 	"gm58-hr-backend/internal/services/currency"
 	"gm58-hr-backend/internal/services/payroll"
 	"gm58-hr-backend/pkg/logger"
@@ -24,6 +23,8 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, redisClient *redis.Client, logger *
 	employeeHandler := handlers.NewEmployeeHandler(db, currencyService)
 	payrollHandler := handlers.NewPayrollHandler(db, payrollProcessor)
 	currencyHandler := handlers.NewCurrencyHandler(db, currencyService)
+	positionHandler := handlers.NewPositionHandler(db)
+	departmentHandler := handlers.NewDepartmentHandler(db)
 
 	// Public routes
 	public := r.Group("/api/v1")
@@ -56,6 +57,27 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, redisClient *redis.Client, logger *
 			employees.PUT("/:id", employeeHandler.UpdateEmployee)
 			employees.DELETE("/:id", employeeHandler.DeleteEmployee)
 			employees.GET("/:id/payslips", employeeHandler.GetEmployeePayslips)
+		}
+
+		// Department routes
+		departments := protected.Group("/departments")
+		{
+			departments.GET("", departmentHandler.GetDepartments)
+			departments.POST("", departmentHandler.CreateDepartment)
+			departments.GET("/:id", departmentHandler.GetDepartment)
+			departments.PUT("/:id", departmentHandler.UpdateDepartment)
+			departments.DELETE("/:id", departmentHandler.DeleteDepartment)
+		}
+
+		// Position routes
+		positions := protected.Group("/positions")
+		{
+			positions.GET("", positionHandler.GetPositions)
+			positions.POST("", positionHandler.CreatePosition)
+			positions.GET("/:id", positionHandler.GetPosition)
+			positions.PUT("/:id", positionHandler.UpdatePosition)
+			positions.DELETE("/:id", positionHandler.DeletePosition)
+			positions.GET("/department/:departmentId", positionHandler.GetPositionsByDepartment)
 		}
 
 		// Payroll routes
