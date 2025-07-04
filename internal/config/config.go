@@ -55,7 +55,7 @@ func Load() *Config {
 		Port:           getEnv("PORT", "8080"),
 		Environment:    getEnv("ENVIRONMENT", "development"),
 		LogLevel:       getEnv("LOG_LEVEL", "info"),
-		AllowedOrigins: strings.Split(getEnv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080"), ","),
+		AllowedOrigins: strings.Split(getEnv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080,http://localhost:5173"), ","),
 
 		CurrencyAPIKey:      getEnv("CURRENCY_API_KEY", ""),
 		CurrencyAPIURL:      getEnv("CURRENCY_API_URL", "https://api.exchangerate-api.com/v4/latest/"),
