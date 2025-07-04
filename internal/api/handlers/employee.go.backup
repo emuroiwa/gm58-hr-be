@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"fmt"
-	"gm58-hr-backend/internal/models"
-	"gm58-hr-backend/internal/services/currency"
 	"net/http"
 	"strconv"
+	"time"
+	"gm58-hr-backend/internal/models"
+	"gm58-hr-backend/internal/services/currency"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -25,18 +26,18 @@ func NewEmployeeHandler(db *gorm.DB, currencyService *currency.CurrencyService) 
 
 func (eh *EmployeeHandler) GetEmployees(c *gin.Context) {
 	var employees []models.Employee
-
+	
 	query := eh.db.Preload("Currency").Preload("Position").Preload("Department")
-
+	
 	if department := c.Query("department"); department != "" {
 		query = query.Joins("JOIN departments ON employees.department_id = departments.id").
 			Where("departments.name = ?", department)
 	}
-
+	
 	if status := c.Query("status"); status != "" {
 		query = query.Where("employment_status = ?", status)
 	}
-
+	
 	if isActive := c.Query("is_active"); isActive != "" {
 		active, _ := strconv.ParseBool(isActive)
 		query = query.Where("is_active = ?", active)
@@ -65,43 +66,43 @@ func (eh *EmployeeHandler) GetEmployees(c *gin.Context) {
 func (eh *EmployeeHandler) CreateEmployee(c *gin.Context) {
 	// Use a temporary struct to handle string dates and manager_id
 	var tempEmployee struct {
-		UserID                *uint   `json:"user_id"`
-		EmployeeNumber        string  `json:"employee_number"`
-		FirstName             string  `json:"first_name"`
-		LastName              string  `json:"last_name"`
-		MiddleName            string  `json:"middle_name"`
-		NationalID            string  `json:"national_id"`
-		TaxNumber             string  `json:"tax_number"`
-		PassportNumber        string  `json:"passport_number"`
-		Email                 string  `json:"email"`
-		Phone                 string  `json:"phone"`
-		AlternativePhone      string  `json:"alternative_phone"`
-		Address               string  `json:"address"`
-		City                  string  `json:"city"`
-		Country               string  `json:"country"`
-		PositionID            uint    `json:"position_id"`
-		DepartmentID          uint    `json:"department_id"`
-		ManagerID             string  `json:"manager_id"` // Handle as string
-		BasicSalary           float64 `json:"basic_salary"`
-		CurrencyID            uint    `json:"currency_id"`
-		PaymentMethod         string  `json:"payment_method"`
-		PaymentSchedule       string  `json:"payment_schedule"`
-		BankName              string  `json:"bank_name"`
-		BankAccount           string  `json:"bank_account"`
-		BankBranch            string  `json:"bank_branch"`
-		BankCode              string  `json:"bank_code"`
-		SwiftCode             string  `json:"swift_code"`
-		HireDate              string  `json:"hire_date"`          // Handle as string
-		ProbationEndDate      string  `json:"probation_end_date"` // Handle as string
-		ContractEndDate       string  `json:"contract_end_date"`  // Handle as string
-		TerminationDate       string  `json:"termination_date"`   // Handle as string
-		EmploymentType        string  `json:"employment_type"`
-		EmploymentStatus      string  `json:"employment_status"`
-		IsActive              bool    `json:"is_active"`
-		EmergencyContactName  string  `json:"emergency_contact_name"`
-		EmergencyContactPhone string  `json:"emergency_contact_phone"`
-		MedicalAidNumber      string  `json:"medical_aid_number"`
-		MedicalAidProvider    string  `json:"medical_aid_provider"`
+		UserID          *uint     `json:"user_id"`
+		EmployeeNumber  string    `json:"employee_number"`
+		FirstName       string    `json:"first_name"`
+		LastName        string    `json:"last_name"`
+		MiddleName      string    `json:"middle_name"`
+		NationalID      string    `json:"national_id"`
+		TaxNumber       string    `json:"tax_number"`
+		PassportNumber  string    `json:"passport_number"`
+		Email           string    `json:"email"`
+		Phone           string    `json:"phone"`
+		AlternativePhone string   `json:"alternative_phone"`
+		Address         string    `json:"address"`
+		City            string    `json:"city"`
+		Country         string    `json:"country"`
+		PositionID      uint      `json:"position_id"`
+		DepartmentID    uint      `json:"department_id"`
+		ManagerID       string    `json:"manager_id"` // Handle as string
+		BasicSalary     float64   `json:"basic_salary"`
+		CurrencyID      uint      `json:"currency_id"`
+		PaymentMethod   string    `json:"payment_method"`
+		PaymentSchedule string    `json:"payment_schedule"`
+		BankName        string    `json:"bank_name"`
+		BankAccount     string    `json:"bank_account"`
+		BankBranch      string    `json:"bank_branch"`
+		BankCode        string    `json:"bank_code"`
+		SwiftCode       string    `json:"swift_code"`
+		HireDate        string    `json:"hire_date"`        // Handle as string
+		ProbationEndDate string   `json:"probation_end_date"` // Handle as string
+		ContractEndDate string    `json:"contract_end_date"`  // Handle as string
+		TerminationDate string    `json:"termination_date"`   // Handle as string
+		EmploymentType  string    `json:"employment_type"`
+		EmploymentStatus string   `json:"employment_status"`
+		IsActive        bool      `json:"is_active"`
+		EmergencyContactName  string `json:"emergency_contact_name"`
+		EmergencyContactPhone string `json:"emergency_contact_phone"`
+		MedicalAidNumber      string `json:"medical_aid_number"`
+		MedicalAidProvider    string `json:"medical_aid_provider"`
 	}
 
 	if err := c.ShouldBindJSON(&tempEmployee); err != nil {
@@ -111,34 +112,34 @@ func (eh *EmployeeHandler) CreateEmployee(c *gin.Context) {
 
 	// Convert to Employee struct with proper types
 	employee := models.Employee{
-		UserID:                tempEmployee.UserID,
-		EmployeeNumber:        tempEmployee.EmployeeNumber,
-		FirstName:             tempEmployee.FirstName,
-		LastName:              tempEmployee.LastName,
-		MiddleName:            tempEmployee.MiddleName,
-		NationalID:            tempEmployee.NationalID,
-		TaxNumber:             tempEmployee.TaxNumber,
-		PassportNumber:        tempEmployee.PassportNumber,
-		Email:                 tempEmployee.Email,
-		Phone:                 tempEmployee.Phone,
-		AlternativePhone:      tempEmployee.AlternativePhone,
-		Address:               tempEmployee.Address,
-		City:                  tempEmployee.City,
-		Country:               tempEmployee.Country,
-		PositionID:            tempEmployee.PositionID,
-		DepartmentID:          tempEmployee.DepartmentID,
-		BasicSalary:           tempEmployee.BasicSalary,
-		CurrencyID:            tempEmployee.CurrencyID,
-		PaymentMethod:         tempEmployee.PaymentMethod,
-		PaymentSchedule:       tempEmployee.PaymentSchedule,
-		BankName:              tempEmployee.BankName,
-		BankAccount:           tempEmployee.BankAccount,
-		BankBranch:            tempEmployee.BankBranch,
-		BankCode:              tempEmployee.BankCode,
-		SwiftCode:             tempEmployee.SwiftCode,
-		EmploymentType:        tempEmployee.EmploymentType,
-		EmploymentStatus:      tempEmployee.EmploymentStatus,
-		IsActive:              tempEmployee.IsActive,
+		UserID:          tempEmployee.UserID,
+		EmployeeNumber:  tempEmployee.EmployeeNumber,
+		FirstName:       tempEmployee.FirstName,
+		LastName:        tempEmployee.LastName,
+		MiddleName:      tempEmployee.MiddleName,
+		NationalID:      tempEmployee.NationalID,
+		TaxNumber:       tempEmployee.TaxNumber,
+		PassportNumber:  tempEmployee.PassportNumber,
+		Email:           tempEmployee.Email,
+		Phone:           tempEmployee.Phone,
+		AlternativePhone: tempEmployee.AlternativePhone,
+		Address:         tempEmployee.Address,
+		City:            tempEmployee.City,
+		Country:         tempEmployee.Country,
+		PositionID:      tempEmployee.PositionID,
+		DepartmentID:    tempEmployee.DepartmentID,
+		BasicSalary:     tempEmployee.BasicSalary,
+		CurrencyID:      tempEmployee.CurrencyID,
+		PaymentMethod:   tempEmployee.PaymentMethod,
+		PaymentSchedule: tempEmployee.PaymentSchedule,
+		BankName:        tempEmployee.BankName,
+		BankAccount:     tempEmployee.BankAccount,
+		BankBranch:      tempEmployee.BankBranch,
+		BankCode:        tempEmployee.BankCode,
+		SwiftCode:       tempEmployee.SwiftCode,
+		EmploymentType:  tempEmployee.EmploymentType,
+		EmploymentStatus: tempEmployee.EmploymentStatus,
+		IsActive:        tempEmployee.IsActive,
 		EmergencyContactName:  tempEmployee.EmergencyContactName,
 		EmergencyContactPhone: tempEmployee.EmergencyContactPhone,
 		MedicalAidNumber:      tempEmployee.MedicalAidNumber,
@@ -153,33 +154,33 @@ func (eh *EmployeeHandler) CreateEmployee(c *gin.Context) {
 		}
 	}
 
-	// // Parse dates in YYYY-MM-DD format
-	// if tempEmployee.HireDate != "" {
-	// 	if hireDate, err := time.Parse("2006-01-02", tempEmployee.HireDate); err == nil {
-	// 		employee.HireDate = hireDate
-	// 	} else {
-	// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid hire_date format. Use YYYY-MM-DD"})
-	// 		return
-	// 	}
-	// }
+	// Parse dates in YYYY-MM-DD format
+	if tempEmployee.HireDate != "" {
+		if hireDate, err := time.Parse("2006-01-02", tempEmployee.HireDate); err == nil {
+			employee.HireDate = hireDate
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid hire_date format. Use YYYY-MM-DD"})
+			return
+		}
+	}
 
-	// if tempEmployee.ProbationEndDate != "" {
-	// 	if probationEndDate, err := time.Parse("2006-01-02", tempEmployee.ProbationEndDate); err == nil {
-	// 		employee.ProbationEndDate = &probationEndDate
-	// 	}
-	// }
+	if tempEmployee.ProbationEndDate != "" {
+		if probationEndDate, err := time.Parse("2006-01-02", tempEmployee.ProbationEndDate); err == nil {
+			employee.ProbationEndDate = &probationEndDate
+		}
+	}
 
-	// if tempEmployee.ContractEndDate != "" {
-	// 	if contractEndDate, err := time.Parse("2006-01-02", tempEmployee.ContractEndDate); err == nil {
-	// 		employee.ContractEndDate = &contractEndDate
-	// 	}
-	// }
+	if tempEmployee.ContractEndDate != "" {
+		if contractEndDate, err := time.Parse("2006-01-02", tempEmployee.ContractEndDate); err == nil {
+			employee.ContractEndDate = &contractEndDate
+		}
+	}
 
-	// if tempEmployee.TerminationDate != "" {
-	// 	if terminationDate, err := time.Parse("2006-01-02", tempEmployee.TerminationDate); err == nil {
-	// 		employee.TerminationDate = &terminationDate
-	// 	}
-	// }
+	if tempEmployee.TerminationDate != "" {
+		if terminationDate, err := time.Parse("2006-01-02", tempEmployee.TerminationDate); err == nil {
+			employee.TerminationDate = &terminationDate
+		}
+	}
 
 	// Validate currency
 	var currency models.Currency
@@ -245,43 +246,43 @@ func (eh *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 
 	// Use the same temporary struct for updates
 	var tempEmployee struct {
-		UserID                *uint   `json:"user_id"`
-		EmployeeNumber        string  `json:"employee_number"`
-		FirstName             string  `json:"first_name"`
-		LastName              string  `json:"last_name"`
-		MiddleName            string  `json:"middle_name"`
-		NationalID            string  `json:"national_id"`
-		TaxNumber             string  `json:"tax_number"`
-		PassportNumber        string  `json:"passport_number"`
-		Email                 string  `json:"email"`
-		Phone                 string  `json:"phone"`
-		AlternativePhone      string  `json:"alternative_phone"`
-		Address               string  `json:"address"`
-		City                  string  `json:"city"`
-		Country               string  `json:"country"`
-		PositionID            uint    `json:"position_id"`
-		DepartmentID          uint    `json:"department_id"`
-		ManagerID             string  `json:"manager_id"`
-		BasicSalary           float64 `json:"basic_salary"`
-		CurrencyID            uint    `json:"currency_id"`
-		PaymentMethod         string  `json:"payment_method"`
-		PaymentSchedule       string  `json:"payment_schedule"`
-		BankName              string  `json:"bank_name"`
-		BankAccount           string  `json:"bank_account"`
-		BankBranch            string  `json:"bank_branch"`
-		BankCode              string  `json:"bank_code"`
-		SwiftCode             string  `json:"swift_code"`
-		HireDate              string  `json:"hire_date"`
-		ProbationEndDate      string  `json:"probation_end_date"`
-		ContractEndDate       string  `json:"contract_end_date"`
-		TerminationDate       string  `json:"termination_date"`
-		EmploymentType        string  `json:"employment_type"`
-		EmploymentStatus      string  `json:"employment_status"`
-		IsActive              bool    `json:"is_active"`
-		EmergencyContactName  string  `json:"emergency_contact_name"`
-		EmergencyContactPhone string  `json:"emergency_contact_phone"`
-		MedicalAidNumber      string  `json:"medical_aid_number"`
-		MedicalAidProvider    string  `json:"medical_aid_provider"`
+		UserID          *uint     `json:"user_id"`
+		EmployeeNumber  string    `json:"employee_number"`
+		FirstName       string    `json:"first_name"`
+		LastName        string    `json:"last_name"`
+		MiddleName      string    `json:"middle_name"`
+		NationalID      string    `json:"national_id"`
+		TaxNumber       string    `json:"tax_number"`
+		PassportNumber  string    `json:"passport_number"`
+		Email           string    `json:"email"`
+		Phone           string    `json:"phone"`
+		AlternativePhone string   `json:"alternative_phone"`
+		Address         string    `json:"address"`
+		City            string    `json:"city"`
+		Country         string    `json:"country"`
+		PositionID      uint      `json:"position_id"`
+		DepartmentID    uint      `json:"department_id"`
+		ManagerID       string    `json:"manager_id"`
+		BasicSalary     float64   `json:"basic_salary"`
+		CurrencyID      uint      `json:"currency_id"`
+		PaymentMethod   string    `json:"payment_method"`
+		PaymentSchedule string    `json:"payment_schedule"`
+		BankName        string    `json:"bank_name"`
+		BankAccount     string    `json:"bank_account"`
+		BankBranch      string    `json:"bank_branch"`
+		BankCode        string    `json:"bank_code"`
+		SwiftCode       string    `json:"swift_code"`
+		HireDate        string    `json:"hire_date"`
+		ProbationEndDate string   `json:"probation_end_date"`
+		ContractEndDate string    `json:"contract_end_date"`
+		TerminationDate string    `json:"termination_date"`
+		EmploymentType  string    `json:"employment_type"`
+		EmploymentStatus string   `json:"employment_status"`
+		IsActive        bool      `json:"is_active"`
+		EmergencyContactName  string `json:"emergency_contact_name"`
+		EmergencyContactPhone string `json:"emergency_contact_phone"`
+		MedicalAidNumber      string `json:"medical_aid_number"`
+		MedicalAidProvider    string `json:"medical_aid_provider"`
 	}
 
 	if err := c.ShouldBindJSON(&tempEmployee); err != nil {
@@ -297,7 +298,7 @@ func (eh *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 		employee.LastName = tempEmployee.LastName
 	}
 	employee.MiddleName = tempEmployee.MiddleName // Allow empty
-
+	
 	if tempEmployee.Email != "" {
 		employee.Email = tempEmployee.Email
 	}
@@ -305,8 +306,8 @@ func (eh *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 		employee.Phone = tempEmployee.Phone
 	}
 	employee.AlternativePhone = tempEmployee.AlternativePhone // Allow empty
-	employee.Address = tempEmployee.Address                   // Allow empty
-
+	employee.Address = tempEmployee.Address // Allow empty
+	
 	if tempEmployee.City != "" {
 		employee.City = tempEmployee.City
 	}
@@ -333,30 +334,30 @@ func (eh *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 		employee.ManagerID = nil
 	}
 
-	// // Handle date updates
-	// if tempEmployee.HireDate != "" {
-	// 	if hireDate, err := time.Parse("2006-01-02", tempEmployee.HireDate); err == nil {
-	// 		employee.HireDate = hireDate
-	// 	}
-	// }
+	// Handle date updates
+	if tempEmployee.HireDate != "" {
+		if hireDate, err := time.Parse("2006-01-02", tempEmployee.HireDate); err == nil {
+			employee.HireDate = hireDate
+		}
+	}
 
-	// if tempEmployee.ProbationEndDate != "" {
-	// 	if probationEndDate, err := time.Parse("2006-01-02", tempEmployee.ProbationEndDate); err == nil {
-	// 		employee.ProbationEndDate = &probationEndDate
-	// 	}
-	// }
+	if tempEmployee.ProbationEndDate != "" {
+		if probationEndDate, err := time.Parse("2006-01-02", tempEmployee.ProbationEndDate); err == nil {
+			employee.ProbationEndDate = &probationEndDate
+		}
+	}
 
-	// if tempEmployee.ContractEndDate != "" {
-	// 	if contractEndDate, err := time.Parse("2006-01-02", tempEmployee.ContractEndDate); err == nil {
-	// 		employee.ContractEndDate = &contractEndDate
-	// 	}
-	// }
+	if tempEmployee.ContractEndDate != "" {
+		if contractEndDate, err := time.Parse("2006-01-02", tempEmployee.ContractEndDate); err == nil {
+			employee.ContractEndDate = &contractEndDate
+		}
+	}
 
-	// if tempEmployee.TerminationDate != "" {
-	// 	if terminationDate, err := time.Parse("2006-01-02", tempEmployee.TerminationDate); err == nil {
-	// 		employee.TerminationDate = &terminationDate
-	// 	}
-	// }
+	if tempEmployee.TerminationDate != "" {
+		if terminationDate, err := time.Parse("2006-01-02", tempEmployee.TerminationDate); err == nil {
+			employee.TerminationDate = &terminationDate
+		}
+	}
 
 	// Validate currency if changed
 	if tempEmployee.CurrencyID != 0 && tempEmployee.CurrencyID != employee.CurrencyID {
